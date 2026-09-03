@@ -1,0 +1,40 @@
+name: Validate Docs Folder
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  validate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Check docs directory exists
+        run: |
+          if [ ! -d "docs" ]; then
+            echo "::error::The /docs directory is missing in the root of the repository."
+            exit 1
+          fi
+
+      - name: Check required documentation files
+        run: |
+          if ! ls docs/*.sql 1> /dev/null 2>&1; then
+            echo "::error::Missing SQL database script in /docs folder."
+            exit 1
+          fi
+
+          if ! ls docs/*.md 1> /dev/null 2>&1; then
+            echo "::error::Missing API Endpoint Plan (.md) in /docs folder."
+            exit 1
+          fi
+
+          if ! (ls docs/*.png 1> /dev/null 2>&1 || ls docs/*.pdf 1> /dev/null 2>&1); then
+            echo "::error::Missing ERD diagram (.png or .pdf) in /docs folder."
+            exit 1
+          fi
+
+          echo "All required planning documents are present."
